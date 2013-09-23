@@ -6,15 +6,19 @@
 
 var resolve = require('path').resolve
   , join = require('path').join
+  , extName = require('path').extname
   , exec = require('child_process').exec
   , program = require('commander')
   , connect = require('connect')
+  , coffee = require('coffee-script')
   , jade = require('jade')
   , stylus = require('stylus')
   , less = require('less-middleware')
   , opener = require('opener')
   , url = require('url')
-  , fs = require('fs');
+  , fs = require('fs')
+  , LiveReloadServer = require('tiny-lr')
+  , gaze = require('gaze');
 
 // CLI
 
@@ -24,6 +28,7 @@ program
   .option('-F, --format <fmt>', 'specify the log format string', 'dev')
   .option('-p, --port <port>', 'specify the port [3000]', Number, 3000)
   .option('-H, --hidden', 'enable hidden file serving')
+  .option('-C, --no-coffee', 'disable coffee rendering')
   .option('-J, --no-jade', 'disable jade rendering')
   .option('-S, --no-stylus', 'disable stylus rendering')
   .option('    --no-less', 'disable less css rendering')
@@ -34,6 +39,7 @@ program
   .option('-f, --favicon <path>', 'serve the given favicon')
   .option('-C, --cors', 'allows cross origin access serving')
   .option('    --compress', 'gzip or deflate the response')
+  .option('-R, --livereload', 'refresh your CSS (or page) with each save')
   .option('    --exec <cmd>', 'execute command on each request')
   .parse(process.argv);
 
@@ -54,6 +60,16 @@ if (program.stylus) {
   server.use(function(req, res, next){
     req.url = req.url.replace(/\.styl$/, '.css');
     next();
+  });
+}
+
+// coffee
+if (program.coffee) {
+  server.use(function(req, res, next){
+    if (!req.url.match(/\.coffee$/)) return next();
+    var file = join(path, url.parse(req.url).pathname);
+    res.setHeader('Content-Type', 'application/x-javascript');
+    res.end(coffee.compile(fs.readFileSync(file).toString()));
   });
 }
 
@@ -99,6 +115,56 @@ if (program.cors) {
 // compression
 if (program.compress) {
   server.use(connect.compress());
+}
+
+// livereload
+if (program.livereload) {
+  var port = 35729;
+  server.use(function(req, res, next){
+    var getSnippet = function () {
+      var snippet = [
+        "<!-- livereload snippet -->",
+        "<script>document.write('<script src=\"http://'",
+        " + (location.host || 'localhost').split(':')[0]",
+        " + ':" + port + "/livereload.js?snipver=1\"><\\/script>')",
+        "</script>",
+        ""
+        ].join('\n');
+      return snippet;
+    };
+    var write = res.write;
+    var filepath = url.parse(req.url).pathname;
+    filepath = filepath.slice(-1) === '/' ? filepath + 'index.html' : filepath;
+    if (extName( filepath ) !== '.html') return next();
+    res.write = function (string, encoding) {
+      var body = string instanceof Buffer ? string.toString() : string;
+      body = body.replace(/<\/body>/, function (w) {
+        return getSnippet() + w;
+      });
+      if (string instanceof Buffer) {
+        string = new Buffer(body);
+      } else {
+        string = body;
+      }
+      if (!this.headerSent) {
+        this.setHeader('content-length', Buffer.byteLength(body));
+        this._implicitHeader();
+      }
+      write.call(res, string, encoding);
+    };
+    next();
+  });
+  var lrServer = new LiveReloadServer();
+  lrServer.listen(port);
+  gaze(path + '/**/*', function(){
+    this.on('all', function(event, filepath){
+      lrServer.changed({
+        body: {
+          files: escape(filepath)
+        }
+      });
+    });
+  });
 }
 
 // exec command
