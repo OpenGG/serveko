@@ -9,9 +9,10 @@ var resolve = require('path').resolve
   , exec = require('child_process').exec
   , program = require('commander')
   , connect = require('connect')
-  , stylus = require('stylus')
   , jade = require('jade')
+  , stylus = require('stylus')
   , less = require('less-middleware')
+  , opener = require('opener')
   , url = require('url')
   , fs = require('fs');
 
@@ -23,9 +24,10 @@ program
   .option('-F, --format <fmt>', 'specify the log format string', 'dev')
   .option('-p, --port <port>', 'specify the port [3000]', Number, 3000)
   .option('-H, --hidden', 'enable hidden file serving')
-  .option('-S, --no-stylus', 'disable stylus rendering')
   .option('-J, --no-jade', 'disable jade rendering')
+  .option('-S, --no-stylus', 'disable stylus rendering')
   .option('    --no-less', 'disable less css rendering')
+  .option('-o, --open', 'open with your browser')
   .option('-I, --no-icons', 'disable icons')
   .option('-L, --no-logs', 'disable request logging')
   .option('-D, --no-dirs', 'disable directory serving')
@@ -121,5 +123,6 @@ if (program.dirs) {
 // start the server
 server.listen(program.port, function () {
   console.log('\033[90mserving \033[36m%s\033[90m on port \033[96m%d\033[0m', path, program.port);
+  if (program.open) opener('http://localhost' + ':' + program.port);
 });
 
