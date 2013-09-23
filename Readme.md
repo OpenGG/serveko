@@ -20,16 +20,21 @@ Options:
   -p, --port <port>    specify the port [3000]
   -f, --favicon <path> serve the given favicon
   -H, --hidden         enable hidden file serving
-  -C, --cors           allows cross origin access serving
-  -S, --no-stylus      disable stylus rendering
+  -c, --no-coffee      disable coffee rendering
   -J, --no-jade        disable jade rendering
+  -S, --no-stylus      disable stylus rendering
       --no-less        disable less css rendering
+  -o, --open           open with your browser
   -I, --no-icons       disable icons
   -L, --no-logs        disable request logging
   -D, --no-dirs        disable directory serving
+  -C, --cors           allows cross origin access serving
       --compress       gzip or deflate the response
+  -R, --livereload     refresh your CSS (or page) with each save
       --exec <cmd>     execute command on each request
   -h, --help           output usage information
+
+
 ```
 
 ## Examples
@@ -61,25 +66,13 @@ Options:
 
 ## License 
 
-(The MIT License)
+MIT
 
 Copyright (c) 2011 TJ Holowaychuk &lt;tj@vision-media.ca&gt;
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+## History
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+### 1.0.0 / 2013-23-09
 
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * Fork from [serve](https://github.com/visionmedia/serve)
+ * Add Open, Coffee-script and livereload support

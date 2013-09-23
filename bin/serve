@@ -28,7 +28,7 @@ program
   .option('-F, --format <fmt>', 'specify the log format string', 'dev')
   .option('-p, --port <port>', 'specify the port [3000]', Number, 3000)
   .option('-H, --hidden', 'enable hidden file serving')
-  .option('-C, --no-coffee', 'disable coffee rendering')
+  .option('-c, --no-coffee', 'disable coffee rendering')
   .option('-J, --no-jade', 'disable jade rendering')
   .option('-S, --no-stylus', 'disable stylus rendering')
   .option('    --no-less', 'disable less css rendering')
