@@ -35,6 +35,6 @@
     "gaze": "~0.4.1"
   },
   "bin": {
-    "serve": "./bin/serve"
+    "serveur": "./bin/serveur"
   }
 }
