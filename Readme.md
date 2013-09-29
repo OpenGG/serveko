@@ -1,24 +1,23 @@
-
-# serve
+# serveur
 
   Simple 5 minute command-line file / directory server built with connect, inspired by nodejitsu's [http-server](https://github.com/nodejitsu/http-server) to show off the simplicity and flexibility of connect as a modular server.
 
 ## Installation
 
-    $ npm install -g serve
+    $ npm install -g serveur
 
 ## Usage
 
 ```
 
-Usage: serve [options] [dir]
+Usage: serveur [options] [dir]
 
 Options:
 
   -v, --version        output the version number
   -F, --format <fmt>   specify the log format string
   -p, --port <port>    specify the port [3000]
-  -f, --favicon <path> serve the given favicon
+  -f, --favicon <path> serveur the given favicon
   -H, --hidden         enable hidden file serving
   -c, --no-coffee      disable coffee rendering
   -J, --no-jade        disable jade rendering
@@ -52,7 +51,7 @@ Options:
 
     $ curl http://local:3000/Readme.md
 
-     # serve
+     # serveur
      ...
 
   Requesting JSON for the directory listing:
