@@ -71,6 +71,10 @@ Copyright (c) 2011 TJ Holowaychuk &lt;tj@vision-media.ca&gt;
 
 ## History
 
+### 1.0.2 / 2013-01-10
+
+ * Typos
+
 ### 1.0.0 / 2013-23-09
 
  * Fork from [serve](https://github.com/visionmedia/serve)

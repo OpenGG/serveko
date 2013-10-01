@@ -178,7 +178,6 @@ if (program.exec) {
 server.use(connect.static(path, { hidden: program.hidden }));
 
 // directory serving
-
 if (program.dirs) {
     server.use(connect.directory(path, {
       hidden: program.hidden
