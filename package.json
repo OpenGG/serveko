@@ -1,6 +1,6 @@
 {
   "name": "serveur",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Simple command-line file / directory server built with connect",
   "keywords": [
     "static",
@@ -14,8 +14,8 @@
     "connect"
   ],
   "contributors": [
-    "François Robichet <calvein@gmail.com> (http://francois.robichet.com)"
-  , "TJ Holowaychuk <tj@vision-media.ca>"
+    "François Robichet <calvein@gmail.com> (http://francois.robichet.com)",
+    "TJ Holowaychuk <tj@vision-media.ca>"
   ],
   "preferGlobal": true,
   "homepage": "https://github.com/Calvein/serveur",
