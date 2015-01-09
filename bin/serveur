@@ -167,8 +167,8 @@ if (program.livereload) {
   var lrServer = new LiveReloadServer();
   lrServer.listen(port);
   gaze(path + '/**/*', function(){
-    if (fs.statSync(filepath).size === 0) return;
     this.on('all', function(event, filepath){
+      if (fs.statSync(filepath).size === 0) return;
       lrServer.changed({
         body: {
           files: escape(filepath)
