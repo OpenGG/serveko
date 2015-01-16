@@ -130,8 +130,6 @@ if (program.compress) {
 // livereload
 if (program.livereload) {
   var port = 35729;
-  var filepath = url.parse(req.url).pathname;
-  filepath = filepath.slice(-1) === '/' ? filepath + 'index.html' : filepath;
   server.use(function(req, res, next){
     var getSnippet = function () {
       var snippet = [
@@ -145,6 +143,8 @@ if (program.livereload) {
       return snippet;
     };
     var write = res.write;
+    var filepath = url.parse(req.url).pathname;
+    filepath = filepath.slice(-1) === '/' ? filepath + 'index.html' : filepath;
     if (extName( filepath ) !== '.html') return next();
     res.write = function (string, encoding) {
       var body = string instanceof Buffer ? string.toString() : string;
@@ -167,7 +167,6 @@ if (program.livereload) {
   var lrServer = new LiveReloadServer();
   lrServer.listen(port);
   gaze(path + '/**/*', function(){
-    if (fs.statSync(filepath).size === 0) return;
     this.on('all', function(event, filepath){
       lrServer.changed({
         body: {
