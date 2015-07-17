@@ -23,6 +23,7 @@ Options:
   -J, --no-jade        disable jade rendering
   -S, --no-stylus      disable stylus rendering
       --no-less        disable less css rendering
+      --no-sass        disable sass css rendering
   -o, --open           open with your browser
   -I, --no-icons       disable icons
   -L, --no-logs        disable request logging
