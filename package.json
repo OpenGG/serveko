@@ -28,6 +28,7 @@
     "stylus": "*",
     "jade": "*",
     "less-middleware": "0.1.x",
+    "sass-middleware": "0.0.x",
     "commander": "0.6.1",
     "opener": "~1.3.0",
     "coffee-script": "~1.6.3",
