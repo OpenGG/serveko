@@ -1,6 +1,6 @@
 {
   "name": "serveur",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "Simple command-line file / directory server built with connect",
   "keywords": [
     "static",
