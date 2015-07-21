@@ -5,207 +5,229 @@
  */
 
 var resolve = require('path').resolve
-  , join = require('path').join
-  , extName = require('path').extname
-  , exec = require('child_process').exec
-  , program = require('commander')
-  , connect = require('connect')
-  , coffee = require('coffee-script')
-  , jade = require('jade')
-  , stylus = require('stylus')
-  , less = require('less-middleware')
-  , sass = require('node-sass-middleware')
-  , opener = require('opener')
-  , url = require('url')
-  , fs = require('fs')
-  , LiveReloadServer = require('tiny-lr')
-  , gaze = require('gaze');
+var join = require('path').join
+var extName = require('path').extname
+var exec = require('child_process').exec
+var url = require('url')
+var fs = require('fs')
+
+var program = require('commander')
+var connect = require('connect')
+var coffee = require('coffee-script')
+var babel = require('babel-core')
+var jade = require('jade')
+var stylus = require('stylus')
+var less = require('less-middleware')
+var sass = require('node-sass-middleware')
+var opener = require('opener')
+var LiveReloadServer = require('tiny-lr')
+var gaze = require('gaze')
 
 // CLI
-
 program
-  .version(require('../package.json').version)
-  .usage('[options] [dir]')
-  .option('-a, --auth <user>:<pass>', 'specify basic auth credentials')
-  .option('-F, --format <fmt>', 'specify the log format string', 'dev')
-  .option('-p, --port <port>', 'specify the port [3000]', Number, 3000)
-  .option('-H, --hidden', 'enable hidden file serving')
-  .option('-c, --no-coffee', 'disable coffee rendering')
-  .option('-J, --no-jade', 'disable jade rendering')
-  .option('-S, --no-stylus', 'disable stylus rendering')
-  .option('    --no-less', 'disable less css rendering')
-  .option('    --no-sass', 'disable sass css rendering')
-  .option('-o, --open', 'open with your browser')
-  .option('-I, --no-icons', 'disable icons')
-  .option('-L, --no-logs', 'disable request logging')
-  .option('-D, --no-dirs', 'disable directory serving')
-  .option('-f, --favicon <path>', 'serve the given favicon')
-  .option('-C, --cors', 'allows cross origin access serving')
-  .option('    --compress', 'gzip or deflate the response')
-  .option('-R, --livereload', 'refresh your CSS (or page) with each save')
-  .option('    --exec <cmd>', 'execute command on each request')
-  .parse(process.argv);
+    .version(require('../package.json').version)
+    .usage('[options] [dir]')
+    .option('-a, --auth <user>:<pass>', 'specify basic auth credentials')
+    .option('-F, --format <fmt>', 'specify the log format string', 'dev')
+    .option('-p, --port <port>', 'specify the port [3000]', Number, 3000)
+    .option('-H, --hidden', 'enable hidden file serving')
+    .option('-c, --no-coffee', 'disable coffee rendering')
+    .option('-b, --no-babel', 'disable babel rendering')
+    .option('-J, --no-jade', 'disable jade rendering')
+    .option('-S, --no-stylus', 'disable stylus rendering')
+    .option('    --no-less', 'disable less css rendering')
+    .option('    --no-sass', 'disable sass css rendering')
+    .option('-o, --open', 'open with your browser')
+    .option('-I, --no-icons', 'disable icons')
+    .option('-L, --no-logs', 'disable request logging')
+    .option('-D, --no-dirs', 'disable directory serving')
+    .option('-f, --favicon <path>', 'serve the given favicon')
+    .option('-C, --cors', 'allows cross origin access serving')
+    .option('    --compress', 'gzip or deflate the response')
+    .option('-R, --livereload', 'refresh your CSS (or page) with each save')
+    .option('    --exec <cmd>', 'execute command on each request')
+    .parse(process.argv)
 
-// path
-var path = resolve(program.args.shift() || '.');
+// Path
+var path = resolve(program.args.shift() || '.')
 
-// setup the server
-var server = connect();
+// Setup the server
+var server = connect()
 
-// basic auth
+// Basic auth
 if (program.auth) {
-  var user = program.auth.split(':')[0];
-  var pass = program.auth.split(':')[1];
-  if (!user || !pass) throw new Error('user and pass required');
-  server.use(connect.basicAuth(user, pass));
+    var user = program.auth.split(':')[0]
+    var pass = program.auth.split(':')[1]
+    if (!user || !pass) throw new Error('user and pass required')
+    server.use(connect.basicAuth(user, pass))
 }
 
 
-// ignore favicon
-server.use(connect.favicon(program.favicon));
+// Ignore favicon
+server.use(connect.favicon(program.favicon))
 
-// logger
-if (program.logs) server.use(connect.logger(program.format));
+// Logger
+if (program.logs) server.use(connect.logger(program.format))
 
-// convert .styl to .css to trick stylus.middleware
-if (program.stylus) {
-  server.use(function(req, res, next){
-    req.url = req.url.replace(/\.styl$/, '.css');
-    next();
-  });
-}
-
-// coffee
+// Coffee
 if (program.coffee) {
-  server.use(function(req, res, next){
-    if (!req.url.match(/\.coffee$/)) return next();
-    var file = join(path, url.parse(req.url).pathname);
-    res.setHeader('Content-Type', 'application/x-javascript');
-    res.end(coffee.compile(fs.readFileSync(file).toString()));
-  });
+    server.use(function(req, res, next) {
+        if (!matchFile(req.url, 'coffee')) return next()
+        var file = getFile(req.url)
+        res.setHeader('Content-Type', 'application/x-javascript')
+        res.end(coffee.compile(fs.readFileSync(file).toString()))
+    })
 }
 
-// jade
+// Babel
+if (program.babel) {
+    server.use(function(req, res, next) {
+        if (!matchFile(req.url, 'js')) return next()
+        var file = getFile(req.url)
+        res.setHeader('Content-Type', 'application/x-javascript')
+        res.end(babel.transformFileSync(file).code)
+    })
+}
+
+// Jade
 if (program.jade) {
-  server.use(function(req, res, next){
-    if (!req.url.match(/\.jade$/)) return next();
-    var file = join(path, url.parse(req.url).pathname);
-    fs.readFile(file, 'utf8', function(err, str){
-      if (err) return next(err);
-      try {
-        var fn = jade.compile(str, { filename: file });
-        str = fn();
-        res.setHeader('Content-Type', 'text/html');
-        res.setHeader('Content-Length', Buffer.byteLength(str));
-        res.end(str);
-      } catch (err) {
-        next(err);
-      }
-    });
-  });
+    server.use(function(req, res, next) {
+        if (!matchFile(req.url, 'jade')) return next()
+        var file = getFile(req.url)
+        fs.readFile(file, 'utf8', function(err, str) {
+            if (err) return next(err)
+            try {
+                var fn = jade.compile(str, { filename: file })
+                str = fn()
+                res.setHeader('Content-Type', 'text/html')
+                res.setHeader('Content-Length', Buffer.byteLength(str))
+                res.end(str)
+            } catch (err) {
+                next(err)
+            }
+        })
+    })
 }
 
-// stylus
-server.use(stylus.middleware({ src: path }));
+// Stylus
+// Convert .styl to .css to trick stylus.middleware
+if (program.stylus) {
+    server.use(function(req, res, next) {
+        req.url = req.url.replace(/\.styl$/, '.css')
+        next()
+    })
+}
+server.use(stylus.middleware({ src: path }))
 
-// less
+// Less
 if (program.less) {
-  server.use(less(path));
+    server.use(less(path))
 }
 
-// sass
+// Sass
 if (program.sass) {
-  server.use(sass({ src: path }));
+    server.use(sass({ src: path }))
 }
 
 // CORS access for files
 if (program.cors) {
-  server.use(function(req, res, next){
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, x-csrf-token, origin');
-    if ('OPTIONS' == req.method) return res.end();
-    next();
-  });
+    server.use(function(req, res, next) {
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, x-csrf-token, origin')
+        if ('OPTIONS' === req.method) return res.end()
+        next()
+    })
 }
 
-// compression
+// Compression
 if (program.compress) {
-  server.use(connect.compress());
+    server.use(connect.compress())
 }
 
-// livereload
+// Livereload
 if (program.livereload) {
-  var port = 35729;
-  server.use(function(req, res, next){
-    var getSnippet = function () {
-      var snippet = [
-        "<!-- livereload snippet -->",
-        "<script>document.write('<script src=\"http://'",
-        " + (location.host || 'localhost').split(':')[0]",
-        " + ':" + port + "/livereload.js?snipver=1\"><\\/script>')",
-        "</script>",
-        ""
-        ].join('\n');
-      return snippet;
-    };
-    var write = res.write;
-    var filepath = url.parse(req.url).pathname;
-    filepath = filepath.slice(-1) === '/' ? filepath + 'index.html' : filepath;
-    if (extName( filepath ) !== '.html') return next();
-    res.write = function (string, encoding) {
-      var body = string instanceof Buffer ? string.toString() : string;
-      body = body.replace(/<\/body>/, function (w) {
-        return getSnippet() + w;
-      });
-      if (string instanceof Buffer) {
-        string = new Buffer(body);
-      } else {
-        string = body;
-      }
-      if (!this.headerSent) {
-        this.setHeader('content-length', Buffer.byteLength(body));
-        this._implicitHeader();
-      }
-      write.call(res, string, encoding);
-    };
-    next();
-  });
-  var lrServer = new LiveReloadServer();
-  lrServer.listen(port);
-  gaze(path + '/**/*', function(){
-    this.on('all', function(event, filepath){
-      if (fs.statSync(filepath).size === 0) return;
-      lrServer.changed({
-        body: {
-          files: escape(filepath)
+    var port = 35729
+    server.use(function(req, res, next) {
+        var getSnippet = function () {
+            var snippet = [
+                "<!-- livereload snippet -->",
+                "<script>document.write('<script src=\"http://'",
+                " + (location.host || 'localhost').split(':')[0]",
+                " + ':" + port + "/livereload.js?snipver=1\"><\\/script>')",
+                "</script>",
+                ""
+            ].join('\n')
+            return snippet
         }
-      });
-    });
-  });
+        var write = res.write
+        var filepath = url.parse(req.url).pathname
+        filepath = filepath.slice(-1) === '/' ? filepath + 'index.html' : filepath
+        if (extName( filepath ) !== '.html') return next()
+        res.write = function (string, encoding) {
+            var body = string instanceof Buffer ? string.toString() : string
+            body = body.replace(/<\/body>/, function (w) {
+                return getSnippet() + w
+            })
+            if (string instanceof Buffer) {
+                string = new Buffer(body)
+            } else {
+                string = body
+            }
+            if (!this.headerSent) {
+                this.setHeader('content-length', Buffer.byteLength(body))
+                this._implicitHeader()
+            }
+            write.call(res, string, encoding)
+        }
+        next()
+    })
+    var lrServer = new LiveReloadServer()
+    lrServer.listen(port)
+    gaze(path + '/**/*', function() {
+        this.on('all', function(event, filepath) {
+            if (fs.statSync(filepath).size === 0) return
+            lrServer.changed({
+                body: {
+                    files: escape(filepath)
+                }
+            })
+        })
+    })
 }
 
-// exec command
+// Exec command
 if (program.exec) {
-  server.use(function (req, res, next){
-    exec(program.exec, next);
-  });
+    server.use(function (req, res, next) {
+        exec(program.exec, next)
+    })
 }
 
-// static files
-server.use(connect.static(path, { hidden: program.hidden }));
+// Static files
+server.use(connect.static(path, { hidden: program.hidden }))
 
-// directory serving
+// Directory serving
 if (program.dirs) {
     server.use(connect.directory(path, {
-      hidden: program.hidden
-    , icons: program.icons
-  }));
+        hidden: program.hidden
+      , icons: program.icons
+    }))
 }
 
-// start the server
+// Start the server
 server.listen(program.port, function () {
-  console.log('\033[90mserving \033[36m%s\033[90m on port \033[96m%d\033[0m', path, program.port);
-  if (program.open) opener('http://localhost' + ':' + program.port);
-});
+    console.log('\033[90mserving \033[36m%s\033[90m on port \033[96m%d\033[0m', path, program.port)
+    if (program.open) opener('http://localhost' + ':' + program.port)
+})
 
+
+/**
+ * Utils functions
+ */
+function matchFile(file, ext) {
+    return file.match(RegExp('.' + ext + '$'))
+}
+
+function getFile(file) {
+    return join(path, url.parse(file).pathname)
+}

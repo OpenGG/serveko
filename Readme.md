@@ -20,6 +20,7 @@ Options:
   -f, --favicon <path> serveur the given favicon
   -H, --hidden         enable hidden file serving
   -c, --no-coffee      disable coffee rendering
+  -b, --no-babel       disable babel rendering')
   -J, --no-jade        disable jade rendering
   -S, --no-stylus      disable stylus rendering
       --no-less        disable less css rendering
@@ -39,44 +40,12 @@ Options:
 
 ## Examples
 
- HTTP Accept support built into `connect.directory()`:
- 
-     $ curl http://local:3000/ -H "Accept: text/plain"
-     bin
-     History.md
-     node_modules
-     package.json
-     Readme.md
+Directory listing served by connect's `connect.directory()` middleware.
 
-  Requesting a file:
-
-    $ curl http://local:3000/Readme.md
-
-     # serveur
-     ...
-
-  Requesting JSON for the directory listing:
-
-    $ curl http://local:3000/ -H "Accept: application/json"
-    ["bin","History.md","node_modules","package.json","Readme.md"]
-
- Directory listing served by connect's `connect.directory()` middleware.
-
-  ![directory listings](http://f.cl.ly/items/100M2C3o0p2u3A0q1o3H/Screenshot.png)
+![directory listings](http://f.cl.ly/items/100M2C3o0p2u3A0q1o3H/Screenshot.png)
 
 ## License 
 
 MIT
 
-Copyright (c) 2011 TJ Holowaychuk &lt;tj@vision-media.ca&gt;
-
-## History
-
-### 1.0.2 / 2013-01-10
-
- * Typos
-
-### 1.0.0 / 2013-23-09
-
- * Fork from [serve](https://github.com/visionmedia/serve)
- * Add Open, Coffee-script and livereload support
+Copyright © 2011 TJ Holowaychuk &lt;tj@vision-media.ca&gt; & François Robichet &lt;http://francois.robichet.com&gt;
