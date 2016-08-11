@@ -1,51 +1,45 @@
-# serveur
+# serveko
 
   Simple 5 minute command-line file / directory server built with connect, inspired by nodejitsu's [http-server](https://github.com/nodejitsu/http-server) to show off the simplicity and flexibility of connect as a modular server.
 
+  Powered by [koa](https://github.com/koajs/koa).
+
 ## Installation
 
-    $ npm install -g serveur
+    $ npm install -g serveko
 
 ## Usage
 
 ```
 
-Usage: serveur [options] [dir]
+  Usage: index [options] [dir]
 
-Options:
+  Options:
 
-  -v, --version        output the version number
-  -F, --format <fmt>   specify the log format string
-  -p, --port <port>    specify the port [3000]
-  -f, --favicon <path> serveur the given favicon
-  -H, --hidden         enable hidden file serving
-  -c, --no-coffee      disable coffee rendering
-  -b, --no-babel       disable babel rendering')
-  -J, --no-jade        disable jade rendering
-  -S, --no-stylus      disable stylus rendering
-      --no-less        disable less css rendering
-      --no-sass        disable sass css rendering
-  -o, --open           open with your browser
-  -I, --no-icons       disable icons
-  -L, --no-logs        disable request logging
-  -D, --no-dirs        disable directory serving
-  -C, --cors           allows cross origin access serving
-      --compress       gzip or deflate the response
-  -R, --livereload     refresh your CSS (or page) with each save
-      --exec <cmd>     execute command on each request
-  -h, --help           output usage information
-
+    -h, --help                output usage information
+    -V, --version             output the version number
+    -a, --auth <user>:<pass>  specify basic auth credentials
+    -F, --format <fmt>        specify the log format string
+    -p, --port <port>         specify the port [3000]
+    -H, --hidden              enable hidden file serving
+    -b, --no-babel            disable babel rendering
+    -J, --no-pug              disable pug rendering
+    -S, --no-stylus           disable stylus rendering
+    -o, --open                open with your browser
+    -I, --no-icons            disable icons
+    -L, --no-logs             disable request logging
+    -D, --no-dirs             disable directory serving
+    -f, --favicon <path>      serve the given favicon
+        --compress            gzip or deflate the response
+    -R, --livereload          refresh your CSS (or page) with each save
+        --exec <cmd>          execute command on each request
 
 ```
-
-## Examples
-
-Directory listing served by connect's `connect.directory()` middleware.
-
-![directory listings](http://f.cl.ly/items/100M2C3o0p2u3A0q1o3H/Screenshot.png)
 
 ## License 
 
 MIT
 
-Copyright © 2011 TJ Holowaychuk &lt;tj@vision-media.ca&gt; & François Robichet &lt;http://francois.robichet.com&gt;
+Copyright © 2016 OpenGG.
+
+Inspired by [tj/serve](https://github.com/tj/serve)
