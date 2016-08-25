@@ -29,10 +29,15 @@ import livereload from './middleware/livereload';
 import exec from './middleware/exec';
 import directory from './middleware/serve-index';
 
+import {
+  version
+} from '../package.json';
+
 // CLI
 program
-  .version(require('../package.json').version)
-  .usage('[options] [dir]')
+  .version(version)
+  .usage('[options] dir')
+  .description('\tServe from directory dir')
   .option('-a, --auth <user>:<pass>', 'specify basic auth credentials')
   .option('-F, --format <fmt>', 'specify the log format string', 'dev')
   .option('-p, --port <port>', 'specify the port [3000]', Number, 3000)
@@ -52,8 +57,12 @@ program
   .option('    --exec <cmd>', 'execute command on each request')
   .parse(process.argv);
 
+if (program.args.length === 0) {
+  program.help();
+}
+
 // base
-const base = resolve(program.args.shift() || '.');
+const base = resolve(program.args[0]);
 
 const getFilePath = path => join(base, path);
 
